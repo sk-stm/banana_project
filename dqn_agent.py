@@ -7,13 +7,7 @@ from replay_buffer import ReplayBuffer
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
-
-BUFFER_SIZE = int(1e4)  # replay buffer size
-BATCH_SIZE = 64  # minibatch size
-GAMMA = 0.99  # discount factor
-TAU = 1e-3  # for soft update of target parameters
-LR = 5e-4  # learning rate
-UPDATE_EVERY = 4  # how often to update the network
+import PARAMETERS as PARAM
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -37,11 +31,11 @@ class Agent():
         # Q-Network
         self.qnetwork_local = QNetwork(state_size, action_size, seed).to(device)
         self.qnetwork_target = QNetwork(state_size, action_size, seed).to(device)
-        self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=LR)
+        self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=PARAM.LR)
 
         # Replay memory
-        self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, seed)
-        self.memory = PriorityMemory(20000)
+        self.memory = ReplayBuffer(action_size, PARAM.BUFFER_SIZE, PARAM.BATCH_SIZE, seed)
+        self.memory = PriorityMemory(20000, PARAM.BATCH_SIZE)
 
         # Initialize time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
@@ -56,7 +50,7 @@ class Agent():
                 current_value = self.qnetwork_local(np_state)[0][action]
 
                 target_value = self.qnetwork_target(np_state)
-                updated_value = reward + GAMMA * torch.max(target_value)
+                updated_value = reward + PARAM.GAMMA * torch.max(target_value)
 
                 error = abs(current_value - updated_value)
                 self.memory.add(error, (state, action, reward, next_state, done))
@@ -64,19 +58,20 @@ class Agent():
             raise NotImplemented()
 
         # Learn every UPDATE_EVERY time steps.
-        self.t_step = (self.t_step + 1) % UPDATE_EVERY
+        self.t_step = (self.t_step + 1) % PARAM.UPDATE_EVERY
         if self.t_step == 0:
 
             # If enough samples are available in memory, get random subset and learn
             if type(self.memory) == ReplayBuffer:
-                if len(self.memory) > BATCH_SIZE:
+                if len(self.memory) > PARAM.BATCH_SIZE:
                     experiences = self.memory.sample()
-                    self.learn(experiences, GAMMA)
+                    self.learn(experiences, PARAM.GAMMA)
 
+            # TODO reduce duplication
             elif type(self.memory) == PriorityMemory:
-                if self.memory.get_length() > BATCH_SIZE:
-                    experiences = self.memory.sample(BATCH_SIZE)
-                    self.learn(experiences, GAMMA)
+                if self.memory.get_length() > PARAM.BATCH_SIZE:
+                    experiences = self.memory.sample()
+                    self.learn(experiences, PARAM.GAMMA)
 
             else:
                 raise NotImplemented()
@@ -163,16 +158,12 @@ class Agent():
         if type(self.memory) == ReplayBuffer:
             states, actions, rewards, next_states, dones = experiences
         elif type(self.memory) == PriorityMemory:
-
+            states, actions, rewards, next_states, dones, idxs, is_weights = experiences
         else:
             raise NotImplemented()
 
-        ## TODO: compute and minimize the loss
-        "*** YOUR CODE HERE ***"
         # print(f"actions: {actions}")
-
         # taken from solution because it was impossible to debug this. Kernel of notebook needs to be restarts each and every time!
-
         ########## DQN
         # Q_targets = self.get_dqg_target(next_states, rewards, gamma, dones)
 
@@ -191,6 +182,15 @@ class Agent():
         q_exp = q_exp.gather(1, actions)
         # print(q_exp)
 
+        if type(self.memory) == PriorityMemory:
+            with torch.no_grad():
+                # update priority
+                # we need ".cpu()" here because the values need to be copied to memory before converting them to numpy, else they are just present in the GPU
+                errors = torch.abs(q_exp - Q_targets).cpu().data.numpy()
+                for i in range(PARAM.BATCH_SIZE):
+                    idx = idxs[i]
+                    self.memory.update(idx, errors[i])
+
         # compute loss
         loss = F.mse_loss(q_exp, Q_targets)
 
@@ -202,7 +202,7 @@ class Agent():
         self.optimizer.step()
 
         # ------------------- update target network ------------------- #
-        self.soft_update(self.qnetwork_local, self.qnetwork_target, TAU)
+        self.soft_update(self.qnetwork_local, self.qnetwork_target, PARAM.TAU)
 
     def soft_update(self, local_model, target_model, tau):
         """Soft update model parameters.
