@@ -33,10 +33,12 @@ The environment is considered solved if the agent get an **average reward of >=1
 3. Follow the instructions to perform a minimal install of the environment for you system in https://github.com/openai/gym#id5
 
 ## Run training:
-1. Run main.py and the agent start training in the environment.
+1. Set the `TRAIN_MODE` variable in `main.py` to `True`
+2. Run main.py and the agent start training in the environment.
 
 ## Run inference:
- TODO
+1. Set the `TRAIN_MODE` variable in `main.py` to `False`
+2. Run main.py and the agent start training in the environment.
 
 ## Experiments:
 After making sure that all implementations work, (DQN, DDQG, DDQN with prioritized experience replay)
@@ -65,16 +67,3 @@ replay memory hyper parameters
 environment hyper parameters
 - STATE_SIZE = 37
 - ACTION_SIZE = 4
-
-score: ~ 12.7 after around 500 episodes. epsilon ~ 0.06
-After that it declined again until episode 650 to ~ 11.8 and then increased again to 13.4 at ~ 670 episosed
-
-This is weird because the same parameters and agent declined in a previous experiment after reaching
-an average score of 7.x after a couple of episodes again.
-
-I don't have the complete overview over all the outcomes. Probably it's best to create an automatic save to
-all the experiments + hyper parameters to make it reproducible and tune the parameters according to a scema.
-
-
-
-

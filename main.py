@@ -14,7 +14,7 @@ from ddqn_agent_prioritized_experience import DDQNAgentPrioExpReplay
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-TRAIN_MODE = False
+TRAIN_MODE = True
 
 
 def main():
@@ -64,6 +64,7 @@ def run_agent(agent, env: UnityEnvironment, brain_name: str):
     scores = []  # list containing scores from each episode
     scores_window = deque(maxlen=100)  # last 100 scores
     eps = PARAM.EPS_START  # initialize epsilon
+    score_max = 0
     for i_episode in range(1, PARAM.N_EPISODES + 1):
 
         env_info = env.reset(train_mode=TRAIN_MODE)[brain_name]  # reset the environment
@@ -92,26 +93,27 @@ def run_agent(agent, env: UnityEnvironment, brain_name: str):
         eps = max(PARAM.EPS_END, PARAM.EPS_DECAY * eps)  # decrease epsilon
         #print('\rEpisode {}\tAverage Score: {:.2f} \tepsilon: {:.2f} \tbeta: {:.2f}'.format(i_episode, np.mean(scores_window), eps, agent.memory.beta), end="")
         print('\rEpisode {}\tAverage Score: {:.2f} \tepsilon: {:.2f}'.format(i_episode, np.mean(scores_window), eps), end="")
+        
         if i_episode % 100 == 0 and TRAIN_MODE:
             #print('\rEpisode {}\tAverage Score: {:.2f} \tepsilon: {:.2f} \tbeta: {:.2f}'.format(i_episode, np.mean(scores_window), eps, agent.memory.beta))
             print('\nEpisode {}\tAverage Score: {:.2f} \tepsilon: {:.2f}'.format(i_episode, np.mean(scores_window), eps), end="")
             torch.save(agent.qnetwork_local.state_dict(), f'ddq_checkpoint_{i_episode}.pth')
-            plot_scores(scores_window)
-        if np.mean(scores_window) >= 13.0 and TRAIN_MODE:
+            plot_scores(scores, i_episode)
+        if np.mean(scores_window) >= 13.0 and np.mean(scores_window) > score_max and TRAIN_MODE:
+            score_max = np.mean(scores_window)
             print('\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f} '.format(i_episode - 100, np.mean(scores_window)))
-            torch.save(agent.qnetwork_local.state_dict(), f'ddq_checkpoint_{np.round(np.mean(scores_window),2)}.pth')
-            plot_scores(scores_window)
+            torch.save(agent.qnetwork_local.state_dict(), f'ddq_checkpoint_{np.round(score_max,2)}.pth')
+            plot_scores(scores, i_episode)
     return scores
 
 
-def plot_scores(scores):
+def plot_scores(scores, i_episode):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     plt.plot(np.arange(len(scores)), scores)
     plt.ylabel('Score')
     plt.xlabel('Episode #')
-    plt.savefig(f'score_plot_{scores}.jpg')
-    plt.show()
+    plt.savefig(f'score_plot_{i_episode}.jpg')
 
 
 if __name__ == "__main__":
