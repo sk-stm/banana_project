@@ -38,5 +38,43 @@ The environment is considered solved if the agent get an **average reward of >=1
 ## Run inference:
  TODO
 
+## Experiments:
+After making sure that all implementations work, (DQN, DDQG, DDQN with prioritized experience replay)
+I tuned the hyper parameters. I observed that for all experiments, that the average score rises until a certain point
+(usually 300 - 700 episodes) and then decline again.
+
+I print epsilon along with all the values to see if there is a connection.
+### Best performace yet:
+agent hyper parameters
+- N_EPISODES = 2000  # how many episodes to train
+- MAX_T = 10000  # maximum steps per episode
+- EPS_START = 1.0  # start values of epsilon (for epsilon greedy exploration)
+- EPS_END = 0.01  # minimum value of epsilon
+- EPS_DECAY = 0.995  # decay rate of epsilon new_eps = old_eps * eps_decay for each step
+- GAMMA = 0.99  # discount factor
+
+neural network hyper parameters
+- TAU = 1e-3  # for soft update of target parameters
+- LR = 5e-4  # learning rate
+- UPDATE_EVERY = 4  # how often to update the network
+- BATCH_SIZE = 64  # minibatch size
+
+replay memory hyper parameters
+- BUFFER_SIZE = int(1e4)  # replay buffer size
+
+environment hyper parameters
+- STATE_SIZE = 37
+- ACTION_SIZE = 4
+
+score: ~ 12.7 after around 500 episodes. epsilon ~ 0.06
+After that it declined again until episode 650 to ~ 11.8 and then increased again to 13.4 at ~ 670 episosed
+
+This is weird because the same parameters and agent declined in a previous experiment after reaching
+an average score of 7.x after a couple of episodes again.
+
+I don't have the complete overview over all the outcomes. Probably it's best to create an automatic save to
+all the experiments + hyper parameters to make it reproducible and tune the parameters according to a scema.
+
+
 
 

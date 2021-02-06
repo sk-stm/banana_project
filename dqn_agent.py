@@ -12,7 +12,7 @@ import PARAMETERS as PARAM
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-class Agent():
+class DQNAgent:
     """Interacts with and learns from the environment."""
 
     def __init__(self, state_size, action_size, seed):
@@ -35,46 +35,20 @@ class Agent():
 
         # Replay memory
         self.memory = ReplayBuffer(action_size, PARAM.BUFFER_SIZE, PARAM.BATCH_SIZE, seed)
-        self.memory = PriorityMemory(20000, PARAM.BATCH_SIZE)
 
         # Initialize time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
 
     def step(self, state, action, reward, next_state, done):
         # Save experience in replay memory
-        if type(self.memory) == ReplayBuffer:
-            self.memory.add(state, action, reward, next_state, done)
-        elif type(self.memory) == PriorityMemory:
-            with torch.no_grad():
-                np_state = torch.from_numpy(state).float().unsqueeze(0).to(device)
-                current_value = self.qnetwork_local(np_state)[0][action]
-
-                target_value = self.qnetwork_target(np_state)
-                updated_value = reward + PARAM.GAMMA * torch.max(target_value)
-
-                error = abs(current_value - updated_value)
-                self.memory.add(error, (state, action, reward, next_state, done))
-        else:
-            raise NotImplemented()
+        self.memory.add(state, action, reward, next_state, done)
 
         # Learn every UPDATE_EVERY time steps.
         self.t_step = (self.t_step + 1) % PARAM.UPDATE_EVERY
         if self.t_step == 0:
-
-            # If enough samples are available in memory, get random subset and learn
-            if type(self.memory) == ReplayBuffer:
-                if len(self.memory) > PARAM.BATCH_SIZE:
-                    experiences = self.memory.sample()
-                    self.learn(experiences, PARAM.GAMMA)
-
-            # TODO reduce duplication
-            elif type(self.memory) == PriorityMemory:
-                if self.memory.get_length() > PARAM.BATCH_SIZE:
-                    experiences = self.memory.sample()
-                    self.learn(experiences, PARAM.GAMMA)
-
-            else:
-                raise NotImplemented()
+            if len(self.memory) > PARAM.BATCH_SIZE:
+                experiences = self.memory.sample()
+                self.learn(experiences, PARAM.GAMMA)
 
     def act(self, state, eps=0.):
         """Returns actions for given state as per current policy.
@@ -132,20 +106,6 @@ class Agent():
 
         return Q_targets
 
-    def get_ddqn_targets(self, next_states, rewards, gamma, dones):
-        q_hat = self.qnetwork_target(next_states).detach()
-        # print(f"q_hat: {q_hat}")
-        ddq_hat = self.qnetwork_local(next_states).detach()
-        # print(f"ddq_hat: {ddq_hat}")
-        ddq_hat = q_hat.argmax(1)
-        # print(f"argmax ddq_hat: {ddq_hat}")
-        q_hat = q_hat.index_select(1, ddq_hat)[:, 0]
-        # print(f"max of dqn according to ddqn: {q_hat}")
-        q_hat = q_hat.unsqueeze(1)
-        Q_targets = rewards + (gamma * q_hat * (1 - dones))
-
-        return Q_targets
-
     def learn(self, experiences, gamma):
         """Update value parameters using given batch of experience tuples.
 
@@ -155,24 +115,13 @@ class Agent():
             gamma (float): discount factor
         """
 
-        if type(self.memory) == ReplayBuffer:
-            states, actions, rewards, next_states, dones = experiences
-        elif type(self.memory) == PriorityMemory:
-            states, actions, rewards, next_states, dones, idxs, is_weights = experiences
-        else:
-            raise NotImplemented()
+        states, actions, rewards, next_states, dones = experiences
 
-        # print(f"actions: {actions}")
         # taken from solution because it was impossible to debug this. Kernel of notebook needs to be restarts each and every time!
-        ########## DQN
-        # Q_targets = self.get_dqg_target(next_states, rewards, gamma, dones)
-
-        ######### DDQN
-        Q_targets = self.get_ddqn_targets(next_states, rewards, gamma, dones)
+        Q_targets = self.get_dqg_target(next_states, rewards, gamma, dones)
 
         # Get expected Q values
         q_exp = self.qnetwork_local(states)
-        # print(q_exp)
 
         # gets the q values along dimention 1 according to the actions, which is used as index
         # >>> t = torch.tensor([[1,2],[3,4]])
@@ -180,16 +129,6 @@ class Agent():
         # tensor([[ 1],
         #        [ 4]])
         q_exp = q_exp.gather(1, actions)
-        # print(q_exp)
-
-        if type(self.memory) == PriorityMemory:
-            with torch.no_grad():
-                # update priority
-                # we need ".cpu()" here because the values need to be copied to memory before converting them to numpy, else they are just present in the GPU
-                errors = torch.abs(q_exp - Q_targets).cpu().data.numpy()
-                for i in range(PARAM.BATCH_SIZE):
-                    idx = idxs[i]
-                    self.memory.update(idx, errors[i])
 
         # compute loss
         loss = F.mse_loss(q_exp, Q_targets)
