@@ -123,7 +123,8 @@ class DDQNAgentPrioExpReplay:
 
         with torch.no_grad():
             # update priority
-            # we need ".cpu()" here because the values need to be copied to memory before converting them to numpy, else they are just present in the GPU
+            # we need ".cpu()" here because the values need to be copied to memory before converting them to numpy,
+            # else they are just present in the GPU
             errors = torch.abs(q_exp - Q_targets).cpu().data.numpy()
             for i in range(PARAM.BATCH_SIZE):
                 idx = idxs[i]
@@ -140,7 +141,8 @@ class DDQNAgentPrioExpReplay:
         self.optimizer.step()
 
         # ------------------- update target network ------------------- #
-        # according to the algorithm in https://proceedings.neurips.cc/paper/2010/file/091d584fced301b442654dd8c23b3fc9-Paper.pdf
+        # according to the algorithm in
+        # https://proceedings.neurips.cc/paper/2010/file/091d584fced301b442654dd8c23b3fc9-Paper.pdf
         # one should update randomly in ether direction
         update_direction = np.random.binomial(1, 0.5)
         if update_direction == 0:

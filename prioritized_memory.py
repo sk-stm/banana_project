@@ -1,11 +1,11 @@
-# taken fromhttps://github.com/rlcode/per/blob/master/prioritized_memory.py
-
 import random
 import numpy as np
 from priority_tree import SumTree
 import torch
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+# taken from https://github.com/rlcode/per/blob/master/prioritized_memory.py and changed to fit for this project
 
 
 class PriorityMemory:  # stored as ( s, a, r, s_ ) in SumTree

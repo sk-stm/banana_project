@@ -18,11 +18,9 @@ class DQNAgent:
     def __init__(self, state_size, action_size, seed):
         """Initialize an Agent object.
 
-        Params
-        ======
-            state_size (int): dimension of each state
-            action_size (int): dimension of each action
-            seed (int): random seed
+        :param state_size: (int) dimension of each state
+        :param action_size: (int) dimension of each action
+        :param seed: (int) random seed
         """
         self.state_size = state_size
         self.action_size = action_size
@@ -40,6 +38,16 @@ class DQNAgent:
         self.t_step = 0
 
     def step(self, state, action, reward, next_state, done):
+        """
+        Adds the current state-action value to the memory and lets the agent learn if UPDATE_EVERY many steps are taken
+        and the memory has more entries then BATCH_SIZE.
+
+        :param state:       current state
+        :param action:      taken action
+        :param reward:      received reward
+        :param next_state:  next state seen after action
+        :param done:        boolean if the episode ended after the action
+        """
         # Save experience in replay memory
         self.memory.add(state, action, reward, next_state, done)
 
@@ -51,12 +59,11 @@ class DQNAgent:
                 self.learn(experiences, PARAM.GAMMA)
 
     def act(self, state, eps=0.):
-        """Returns actions for given state as per current policy.
+        """
+        Returns actions for given state as per current policy.
 
-        Params
-        ======
-            state (array_like): current state
-            eps (float): epsilon, for epsilon-greedy action selection
+        :param state: (array_like) current state
+        :param eps: (float) epsilon, for epsilon-greedy action selection
         """
         state = torch.from_numpy(state).float().unsqueeze(0).to(device)
         self.qnetwork_local.eval()
@@ -71,53 +78,52 @@ class DQNAgent:
             return random.choice(np.arange(self.action_size))
 
     def get_dqg_target(self, next_states, rewards, gamma, dones):
+        """
+        Gets the state-action value of the target network. That is, the current estimate of the target network for the
+        next state including the seen reward.
 
+        :param next_states: next state for each entry in the sampled mini batch
+        :param rewards:     rewards seen for each sample in the mini batch
+        :param gamma:       decay factor for current estimate
+        :param dones:       indicator if the episode ended for each sample in the mini batch
+        :return:
+        """
         # Get predicted Q values
-        q_hat = self.qnetwork_target(next_states).detach()
-        # print(q_hat)
+        qtarget_values = self.qnetwork_target(next_states).detach()
 
         # get max of it
-        q_hat = q_hat.max(1)
-        # print(q_hat)
+        best_qtarget_value = qtarget_values.max(1)
 
         # reduce one dimension
-        q_hat = q_hat[0]
-        # print(q_hat)
+        best_qtarget_value = best_qtarget_value[0]
 
         # reshape to 2d matrix with one value in it for 1st dimension (so difference can be calculated)
-        # >>> x = torch.tensor([1, 2, 3, 4])
-        # >>> torch.unsqueeze(x, 0)
-        # tensor([[ 1,  2,  3,  4]])
         # >>> torch.unsqueeze(x, 1)
         # tensor([[ 1],
         #        [ 2],
         #        [ 3],
         #        [ 4]])
-        q_hat = q_hat.unsqueeze(1)
+        best_qtarget_value = best_qtarget_value.unsqueeze(1)
 
-        # doesn't work due to dones being a vector.
+        # use vector formulation of:
         # if dones == 1:
         #    Q_targets = rewards
         # else:
-        #    Q_targets = rewards + (gamma * q_hat)
+        #    Q_targets = rewards + (gamma * best_qtarget_value)
+        q_targets = rewards + (gamma * best_qtarget_value * (1 - dones))
 
-        # taken from solution. nice matrix formulation of if statement
-        Q_targets = rewards + (gamma * q_hat * (1 - dones))
-
-        return Q_targets
+        return q_targets
 
     def learn(self, experiences, gamma):
-        """Update value parameters using given batch of experience tuples.
+        """
+        Update value parameters using given batch of experience tuples.
 
-        Params
-        ======
-            experiences (Tuple[torch.Variable]): tuple of (s, a, r, s', done) tuples
-            gamma (float): discount factor
+        :param experiences:  (Tuple[torch.Variable]) tuple of (s, a, r, s', done) tuples
+        :param gamma: (float) discount factor
         """
 
         states, actions, rewards, next_states, dones = experiences
 
-        # taken from solution because it was impossible to debug this. Kernel of notebook needs to be restarts each and every time!
         Q_targets = self.get_dqg_target(next_states, rewards, gamma, dones)
 
         # Get expected Q values
@@ -144,14 +150,13 @@ class DQNAgent:
         self.soft_update(self.qnetwork_local, self.qnetwork_target, PARAM.TAU)
 
     def soft_update(self, local_model, target_model, tau):
-        """Soft update model parameters.
+        """
+        Soft update model parameters.
         θ_target = τ*θ_local + (1 - τ)*θ_target
 
-        Params
-        ======
-            local_model (PyTorch model): weights will be copied from
-            target_model (PyTorch model): weights will be copied to
-            tau (float): interpolation parameter
+        :param local_model: (PyTorch model) weights will be copied from
+        :param target_model: (PyTorch model) weights will be copied to
+        :param tau: (float) interpolation parameter
         """
         for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
             target_param.data.copy_(tau * local_param.data + (1.0 - tau) * target_param.data)
