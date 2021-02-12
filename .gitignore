@@ -2,6 +2,8 @@
 __pycache__
 unity-environment.log
 bigger13_5/
-DQN
+DQN/more_stable_success_model/
+DQN/rest_trained_models/
+DQN/earliest_success_model/dq_checkpoint_13.04.pth
 DDQN/
 DDQN_prio_replay/
