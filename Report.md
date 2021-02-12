@@ -59,11 +59,11 @@ The value for epsilon is reduced over time by the factor 0.995 to encourage rand
 and use the best actions later during the training.
 
 The rewards received by an agent of this type can be shown in this figure:
-[DQN/best_model_overall/score_plot_1992.jpg]
+![Best performance over all](DQN/best_model_overall/score_plot_1992.jpg)
 This agent was trained 2000 episodes and reached an average reward of 15.39.
 
 The reward > 13 was achieved after 658 episodes. The next figure shows the learning process of that agent.
-[DQN/earliest_success_model/score_plot_658.jpg]
+![Earlies solution to the environment](DQN/earliest_success_model/score_plot_658.jpg)
 
 # Future ideas to improve performance
 To improve performance it would be nice to try out DDQN and DDQN with prioritized experience replay to train

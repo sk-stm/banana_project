@@ -9,3 +9,4 @@ saved_checkpoints/dqn_checkpoint_200.pth filter=lfs diff=lfs merge=lfs -text
 saved_checkpoints/dqn_checkpoint_300.pth filter=lfs diff=lfs merge=lfs -text
 DQN/best_model_overall/ddq_checkpoint_15.39.pth filter=lfs diff=lfs merge=lfs -text
 DQN/best_model_overall/score_plot_1992.jpg filter=lfs diff=lfs merge=lfs -text
+DQN/earliest_success_model/score_plot_658.jpg filter=lfs diff=lfs merge=lfs -text
