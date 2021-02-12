@@ -59,30 +59,43 @@ The value for epsilon is reduced over time by the factor 0.995 to encourage rand
 and use the best actions later during the training.
 
 The rewards received by an agent of this type can be shown in this figure:
-# TODO include picture
 [DQN/best_model_overall/score_plot_1992.jpg]
 This agent was trained 2000 episodes and reached an average reward of 15.39.
 
 The reward > 13 was achieved after 658 episodes. The next figure shows the learning process of that agent.
-# TODO include figure
 [DQN/earliest_success_model/score_plot_658.jpg]
 
 # Future ideas to improve performance
-# TODO formulate
-- prioritized experience replay
-- DDQN
-- try A2C or A3C
+To improve performance it would be nice to try out DDQN and DDQN with prioritized experience replay to train
+the agent even faster on the environment. According to [this paper](https://arxiv.org/pdf/1511.05952.pdf)
+prioritized experience replay would have the advantage that the experience is visited according to how much the agent
+can learn from the example (TD-error). Therefore experiences that hold more knowledge for the agent will be visited
+more often and therefore increase the learning efficiency of the agent.
 
+DDQNs would, according to [this paper](https://arxiv.org/pdf/1509.06461.pdf) help reducing the inherent over estimation
+of DQN networks, which comes from always picking the maximum q-value among all possible actions, even though the
+q-values are still evolving. To mitigate this, DDQN uses a second function approximator to take the q-values from while
+choosing an action according to the maximum value of the first function approximator. This way the estimation
+between the two approximators must align in order to create a high update. Therefore luckily obtained high q-values
+don't necessarily result in a high update, especially in the early stage of the training and therefore make the
+training more robust.
 
-# TODO remove this or better put it somewhere else.
-## Experiments:
-After making sure that all implementations work, (DQN, DDQG, DDQN with prioritized experience replay)
-I tuned the hyper parameters. I observed that for all experiments, that the average score rises until a certain point
-(usually 300 - 700 episodes) and then decline again.
+Also probably value based methods can be used for this scenario as well. Even though it's not necessarily an
+improvement in learning speed or efficiency, it would be nice to try it out and see the differences.
 
-I print epsilon along with all the values to see if there is a connection.
-### Best performace yet:
-agent hyper parameters
+## Note on future ideas
+During the past days, after writing the initial solution with DQN, I for fun also implemented DDQN and DDQN
+with prioritized experience replay.
+DDQN is not much different from DQN but I noticed that one can use a bigger update step of the target network (TAU).
+That's probably because it's less over optimistic and therefore the two values of the local and target network don't
+differ too much. As a result the training cenverges even a little bit faster.
+
+Prioritized experience replay works pretty nicely as well, but is very slow in my vanilla implementation.
+A tree structure or s.th. different with a faster search and sorting mechanism would speed up the training a lot.
+So for future implementations this should be considered. Also I didn't need to change the parameters much to make
+it converge. Probably with sophisticated parameter search this solution can work a lot faster.
+
+# Best performace parameters for DQN:
 - N_EPISODES = 2000  # how many episodes to train
 - MAX_T = 10000  # maximum steps per episode
 - EPS_START = 1.0  # start values of epsilon (for epsilon greedy exploration)

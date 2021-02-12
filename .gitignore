@@ -3,3 +3,5 @@ __pycache__
 unity-environment.log
 bigger13_5/
 DQN
+DDQN/
+DDQN_prio_replay/

@@ -1,7 +1,6 @@
 import numpy as np
 import random
 from model import QNetwork
-from prioritized_memory import PriorityMemory
 from replay_buffer import ReplayBuffer
 
 import torch

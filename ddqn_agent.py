@@ -1,7 +1,6 @@
 import numpy as np
 import random
 from model import QNetwork
-from prioritized_memory import PriorityMemory
 from replay_buffer import ReplayBuffer
 
 import torch
@@ -73,12 +72,12 @@ class DDQNAgent:
 
     def get_ddqn_targets(self, next_states, rewards, gamma, dones):
         # get best action according to online value function approximation
-        q_online = self.qnetwork_local(next_states).detach()
-        q_online = q_online.argmax(1)
+        q_local = self.qnetwork_local(next_states).detach()
+        q_local_best_action = q_local.argmax(1)
 
         # get value of target function at position of best online action
         q_target = self.qnetwork_target(next_states).detach()
-        q_target = q_target.index_select(1, q_online)[:, 0]
+        q_target = q_target.index_select(1, q_local_best_action)[:, 0]
 
         # reshape
         q_target = q_target.unsqueeze(1)
@@ -122,13 +121,7 @@ class DDQNAgent:
         self.optimizer.step()
 
         # ------------------- update target network ------------------- #
-        # according to the algorithm in https://proceedings.neurips.cc/paper/2010/file/091d584fced301b442654dd8c23b3fc9-Paper.pdf
-        # one should update randomly in ether direction
-        update_direction = np.random.binomial(1, 0.5)
-        if update_direction == 0:
-            self.soft_update(self.qnetwork_local, self.qnetwork_target, PARAM.TAU)
-        else:
-            self.soft_update(self.qnetwork_target, self.qnetwork_local, PARAM.TAU)
+        self.soft_update(self.qnetwork_local, self.qnetwork_target, PARAM.TAU)
 
     def soft_update(self, local_model, target_model, tau):
         """Soft update model parameters.

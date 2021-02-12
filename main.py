@@ -18,15 +18,15 @@ from ddqn_agent_prioritized_experience import DDQNAgentPrioExpReplay
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-TRAIN_MODE = True
-MODEL_TO_LOAD = "/home/shinchan/Projekte/Reinforcement_learning/Udacity/project_1/deep-reinforcement-learning/p1_navigation/banana_project/DQN/best_model_overall/ddq_checkpoint_15.39.pth"
+TRAIN_MODE = False
+MODEL_TO_LOAD = "DQN/best_model_overall/dq_checkpoint_15.39.pth"
 
 
 def main():
     """
     Main method runs the whole experiment.
     """
-    env = UnityEnvironment(file_name="/home/shinchan/Projekte/Reinforcement_learning/Udacity/project_1/deep-reinforcement-learning/p1_navigation/Banana_Linux/Banana.x86")
+    env = UnityEnvironment(file_name="../Banana_Linux/Banana.x86")
     # get the default brain
     brain_name = env.brain_names[0]
     brain = env.brains[brain_name]
@@ -36,9 +36,8 @@ def main():
     # agent = DDQNAgent(state_size=PARAM.STATE_SIZE, action_size=PARAM.ACTION_SIZE, seed=0)
     # agent = DDQNAgentPrioExpReplay(state_size=PARAM.STATE_SIZE, action_size=PARAM.ACTION_SIZE, seed=0)
 
-    # TODO test if that works
     if not TRAIN_MODE:
-        load_model_into_agent()
+        load_model_into_agent(agent)
 
     scores = run_agent(agent=agent, env=env, brain_name=brain_name)
     save_score_plot(scores=scores)
@@ -142,6 +141,8 @@ def run_agent(agent, env: UnityEnvironment, brain_name: str):
 
         # plot and save the agent if necessary
         plot_and_save_agent(agent, eps, i_episode, score_max, scores, scores_window)
+
+        score_max = np.mean(scores_window)
 
     return scores
 
