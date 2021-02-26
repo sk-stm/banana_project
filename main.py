@@ -19,6 +19,7 @@ from ddqn_agent_prioritized_experience import DDQNAgentPrioExpReplay
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 TRAIN_MODE = False
+ENV_PATH = "../Banana_Linux/Banana.x86"
 MODEL_TO_LOAD = "DQN/best_model_overall/dq_checkpoint_15.39.pth"
 
 
@@ -26,7 +27,7 @@ def main():
     """
     Main method runs the whole experiment.
     """
-    env = UnityEnvironment(file_name="../Banana_Linux/Banana.x86")
+    env = UnityEnvironment(file_name=ENV_PATH)
     # get the default brain
     brain_name = env.brain_names[0]
     brain = env.brains[brain_name]

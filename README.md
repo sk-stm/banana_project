@@ -30,7 +30,14 @@ The environment is considered solved if the agent get an **average reward of >=1
     - `git clone https://github.com/sk-stm/banana_project.git`
     - `cd banana_project`
     - `pip install -r requirements.txt`
-3. Follow the instructions to perform a minimal install of the environment for you system in https://github.com/openai/gym#id5
+3. Follow the instructions to perform a minimal install of the environment for you system in https://github.com/openai/gym#installation
+4. Select the environment according to your system:
+    - Set the `ENV_PATH` variable in `main.py` to the path to the file that holds the appropriate environment for your system.
+    You can download your specific environment:
+        - Linux: [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Linux.zip)
+        - Max OS: [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana.app.zip)
+        - Windows 32Bit: [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Windows_x86.zip)
+        - Windows 64Bit: [here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Windows_x86_64.zip)
 
 ## Run training:
 1. Set the `TRAIN_MODE` variable in `main.py` to `True`

@@ -1,7 +1,7 @@
 # Learning algorithm
 The learning algorithm used was DQN (deep Q-learning with a neural network as function approximation).
 The agent act in the environment to create an understanding of what actions create the most rewards in what states.
-Therefore the agent percieves the state of the environment and acts according to a policy. For each action it takes,
+The agent perceives the state of the environment and acts according to a policy. For each action it takes,
 it receives an reward and observes the next states it transitions to. Also it observes if the episode ended or not.
 
 Each observation (state, action, reward, next state, done) is stored in a list, the replay memory. Once the memory
@@ -16,8 +16,8 @@ Fully connected layer 1:  input-nodes: 64, output-nodes: action_size==4)
 ```
 
 This network (local network) learns to approximate the value for each action of one state.
-This procedure is repeated for UPDATE_EVERY steps, so the network has approximated the values fore some time.
-After that the parameters of the local netowrk are copied to a second network with the same structure (traget network).
+This procedure is repeated for UPDATE_EVERY (hyper parameter) steps, so the network has approximated the values fore some time.
+After that the parameters of this network (local netowrk) are copied to a second network with the same structure (traget network).
 The target network is a network that parameters are kept constant during the training. By copying the parameters
 from the local network to the target network, it captures the current state of the overall training. This network
 is then used to estimate the total discounted reward for the next state.
@@ -52,7 +52,7 @@ updated with the better approximation the local network gained after some steps,
 
 This is repeated until a good approximation of state-action values is achieved.
 
-Tha actions the agent choses to interact with the environment are chosen according to an epsilon-greedy way. That is
+The actions the agent choses to interact with the environment are chosen according to an epsilon-greedy way. That is
 a threshold `epsilon [0,1]` is defined, that specifies the probability a random action is used. With the probability
 `1-epsilon` the greedy action according to the current best approximation of the state-action values is chosen.
 The value for epsilon is reduced over time by the factor 0.995 to encourage random exploration of actions at the start
@@ -60,6 +60,7 @@ and use the best actions later during the training.
 
 The rewards received by an agent of this type can be shown in this figure:
 ![Best performance over all](DQN/best_model_overall/score_plot_1992.jpg)
+
 This agent was trained 2000 episodes and reached an average reward of 15.39.
 
 The reward > 13 was achieved after 658 episodes. The next figure shows the learning process of that agent.
@@ -88,7 +89,7 @@ During the past days, after writing the initial solution with DQN, I for fun als
 with prioritized experience replay.
 DDQN is not much different from DQN but I noticed that one can use a bigger update step of the target network (TAU).
 That's probably because it's less over optimistic and therefore the two values of the local and target network don't
-differ too much. As a result the training cenverges even a little bit faster.
+differ too much. As a result the training converges even a little bit faster.
 
 Prioritized experience replay works pretty nicely as well, but is very slow in my vanilla implementation.
 A tree structure or s.th. different with a faster search and sorting mechanism would speed up the training a lot.

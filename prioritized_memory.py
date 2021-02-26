@@ -5,6 +5,8 @@ import torch
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+# NOTE: Inspiration of the concept was taken from: https://www.youtube.com/watch?v=MqZmwQoOXw4&t=503s
+
 
 class PrioritizedReplayBuffer:
     """Fixed-size buffer to store experience tuples."""
