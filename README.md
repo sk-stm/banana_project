@@ -29,6 +29,8 @@ The environment is considered solved if the agent get an **average reward of >=1
 2. Clone repository:
     - `git clone https://github.com/sk-stm/banana_project.git`
     - `cd banana_project`
+    - `pip install "cython<3.0.0" wheel` (workaround for cython dependency from https://stackoverflow.com/questions/77490435/attributeerror-cython-sources)
+    - `pip install "pyyaml==5.4.1" --no-build-isolation`
     - `pip install -r requirements.txt`
 3. Follow the instructions to perform a minimal install of the environment for you system in https://github.com/openai/gym#installation
 4. Select the environment according to your system:
